@@ -26,13 +26,23 @@ app.use(helmet());
 // CORS configuration - Support multiple origins
 const corsOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split("|")
-  : ["http://localhost:3000", "http://localhost:3173"];
+  : ["http://localhost:5173", "http://localhost:3000"];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin || corsOrigins.includes(origin)) {
+      // Allow requests with no origin (like mobile apps, curl, or Postman)
+      if (!origin) {
+        return callback(null, true);
+      }
+      
+      // Allow all localhost origins for development
+      if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+        return callback(null, true);
+      }
+      
+      // Check whitelist
+      if (corsOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));

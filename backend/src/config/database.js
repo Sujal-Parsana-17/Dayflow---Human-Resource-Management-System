@@ -3,13 +3,10 @@ import mongoose from "mongoose";
 export const connectDB = async () => {
   try {
     const mongoURI =
-      "mongodb+srv://meetjaka46:meet6782@hrms.fxscnuo.mongodb.net/?appName=hrms" ||
+      process.env.MONGODB_URI ||
       "mongodb://127.0.0.1:27017/hrms_dayflow";
 
-    const conn = await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const conn = await mongoose.connect(mongoURI);
 
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     return conn;

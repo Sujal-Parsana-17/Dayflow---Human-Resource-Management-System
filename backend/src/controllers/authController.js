@@ -25,32 +25,34 @@ export const signup = async (req, res, next) => {
 
     // Validate input
     if (!companyName || !name || !email || !phone || !password) {
-      console.log('Missing required fields:', {
-        companyName: !!companyName,
-        name: !!name,
-        email: !!email,
-        phone: !!phone,
-        password: !!password
-      });
+      const missingFields = [];
+      if (!companyName) missingFields.push('company name');
+      if (!name) missingFields.push('name');
+      if (!email) missingFields.push('email');
+      if (!phone) missingFields.push('phone number');
+      if (!password) missingFields.push('password');
+      
+      console.log('Missing required fields:', missingFields);
       return res.status(400).json({
         success: false,
-        message: "Please provide all required fields",
+        message: `Please provide: ${missingFields.join(', ')}`,
       });
     }
 
     if (password !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: "Passwords do not match",
+        message: "Passwords do not match. Please check and try again.",
       });
     }
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log('Duplicate email attempt:', email);
       return res.status(400).json({
         success: false,
-        message: "Email already registered",
+        message: "This email is already registered. Please use a different email or sign in.",
       });
     }
 
@@ -113,6 +115,7 @@ export const signup = async (req, res, next) => {
 
     // Return response
     res.status(201).json({
+      success: true,
       user: user.toJSON(),
       token,
       message: "Account created successfully",
@@ -175,6 +178,7 @@ export const signin = async (req, res, next) => {
     const employee = await Employee.findOne({ userId: user._id });
 
     res.json({
+      success: true,
       user: user.toJSON(),
       token,
       employee,
@@ -201,6 +205,7 @@ export const getCurrentUser = async (req, res, next) => {
     }
 
     res.json({
+      success: true,
       user: user.toJSON(),
       employee,
       message: "User retrieved successfully",

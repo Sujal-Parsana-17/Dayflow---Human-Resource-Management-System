@@ -25,11 +25,21 @@ export const errorHandler = (err, req, res, next) => {
   // Mongoose duplicate key error
   if (err.code === 11000) {
     const field = Object.keys(err.keyValue)[0];
+    const value = err.keyValue[field];
+    let message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
+    
+    // Provide more helpful messages for specific fields
+    if (field === 'email') {
+      message = `This email (${value}) is already registered. Please use a different email or sign in.`;
+    } else if (field === 'loginId') {
+      message = `This login ID is already in use. Please contact support.`;
+    } else if (field === 'phone') {
+      message = `This phone number is already registered.`;
+    }
+    
     return res.status(400).json({
       success: false,
-      message: `${
-        field.charAt(0).toUpperCase() + field.slice(1)
-      } already exists`,
+      message: message,
     });
   }
 

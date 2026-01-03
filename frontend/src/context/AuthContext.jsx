@@ -43,7 +43,28 @@ export const AuthProvider = ({ children }) => {
       
       return response
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Sign up failed'
+      // Extract error message from various possible formats
+      let errorMessage = 'Sign up failed. Please try again.'
+      
+      if (err.response?.data) {
+        // If there's a message field, use it
+        if (err.response.data.message) {
+          errorMessage = err.response.data.message
+        }
+        // If there are validation errors, format them
+        else if (err.response.data.errors && Array.isArray(err.response.data.errors)) {
+          errorMessage = err.response.data.errors
+            .map(e => e.message || e.msg)
+            .join(', ')
+        }
+        // If there's an error field
+        else if (err.response.data.error) {
+          errorMessage = err.response.data.error
+        }
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+      
       setError(errorMessage)
       throw new Error(errorMessage)
     } finally {
@@ -64,7 +85,19 @@ export const AuthProvider = ({ children }) => {
       
       return response
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Sign in failed'
+      // Extract error message from various possible formats
+      let errorMessage = 'Sign in failed. Please check your credentials.'
+      
+      if (err.response?.data) {
+        if (err.response.data.message) {
+          errorMessage = err.response.data.message
+        } else if (err.response.data.error) {
+          errorMessage = err.response.data.error
+        }
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+      
       setError(errorMessage)
       throw new Error(errorMessage)
     } finally {
