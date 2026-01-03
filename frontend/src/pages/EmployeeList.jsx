@@ -124,7 +124,7 @@ function EmployeeList() {
           {filteredEmployees.map((employee) => {
             const status = getEmployeeStatus(employee)
             return (
-              <Card key={employee.id} className="relative hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/employees/${employee.id}`)}>
+              <Card key={employee.id} className="relative hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/employees/${employee.id}`, { state: { viewOnly: true } })}>
                 {/* Status Indicator - Top Right */}
                 <div className="absolute top-4 right-4">
                   {getStatusIcon(status)}

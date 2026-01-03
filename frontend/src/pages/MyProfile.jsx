@@ -17,6 +17,7 @@ function MyProfile() {
     loginId: '',
     email: '',
     mobile: '',
+    address: '',
     company: '',
     department: '',
     manager: '',
@@ -26,6 +27,7 @@ function MyProfile() {
     interests: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
     skills: [],
     certifications: [],
+    profilePicture: null,
   })
   const [newSkill, setNewSkill] = useState('')
   const [newCertification, setNewCertification] = useState('')
@@ -38,6 +40,7 @@ function MyProfile() {
         loginId: user?.loginId || '',
         email: user?.email || '',
         mobile: user?.phone || '',
+        address: user?.address || '',
         company: user?.companyName || '',
         department: user?.department || '',
         manager: user?.manager || '',
@@ -47,6 +50,7 @@ function MyProfile() {
         interests: user?.interests || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
         skills: user?.skills || [],
         certifications: user?.certifications || [],
+        profilePicture: user?.profilePicture || null,
       })
     }
   }, [user])
@@ -62,9 +66,21 @@ function MyProfile() {
       ...formData,
       phone: formData.mobile,
       companyName: formData.company,
+      address: formData.address,
     }
     updateUser(updatedUser)
     setIsEditing(false)
+  }
+
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, profilePicture: reader.result }))
+      }
+      reader.readAsDataURL(file)
+    }
   }
 
   const handleAddSkill = () => {
@@ -120,13 +136,27 @@ function MyProfile() {
             <div>
               <div className="flex items-center gap-4 mb-6">
                 <div className="relative">
-                  <div className="h-24 w-24 rounded-full bg-gradient-to-br from-odoo-primary to-odoo-primary-light flex items-center justify-center text-white font-semibold text-2xl">
-                    {getInitials(formData.name)}
-                  </div>
+                  {formData.profilePicture ? (
+                    <img 
+                      src={formData.profilePicture} 
+                      alt={formData.name}
+                      className="h-24 w-24 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-24 w-24 rounded-full bg-gradient-to-br from-odoo-primary to-odoo-primary-light flex items-center justify-center text-white font-semibold text-2xl">
+                      {getInitials(formData.name)}
+                    </div>
+                  )}
                   {isEditing && (
-                    <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50">
+                    <label className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50 cursor-pointer">
                       <Edit className="h-4 w-4 text-gray-600" />
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProfilePictureChange}
+                        className="hidden"
+                      />
+                    </label>
                   )}
                 </div>
               </div>
@@ -134,7 +164,7 @@ function MyProfile() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">My Name</label>
-                  {isEditing ? (
+                  {isEditing && isAdminOrHR ? (
                     <input
                       type="text"
                       name="name"
@@ -149,7 +179,7 @@ function MyProfile() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Login ID</label>
-                  {isEditing ? (
+                  {isEditing && isAdminOrHR ? (
                     <input
                       type="text"
                       name="loginId"
@@ -164,7 +194,7 @@ function MyProfile() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  {isEditing ? (
+                  {isEditing && isAdminOrHR ? (
                     <input
                       type="email"
                       name="email"
@@ -191,6 +221,21 @@ function MyProfile() {
                     <p className="text-gray-900">{formData.mobile}</p>
                   )}
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  {isEditing ? (
+                    <textarea
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-odoo-primary focus:border-transparent"
+                    />
+                  ) : (
+                    <p className="text-gray-900">{formData.address || 'N/A'}</p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -199,7 +244,7 @@ function MyProfile() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
-                  {isEditing ? (
+                  {isEditing && isAdminOrHR ? (
                     <input
                       type="text"
                       name="company"
@@ -214,7 +259,7 @@ function MyProfile() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                  {isEditing ? (
+                  {isEditing && isAdminOrHR ? (
                     <input
                       type="text"
                       name="department"
@@ -229,7 +274,7 @@ function MyProfile() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Manager</label>
-                  {isEditing ? (
+                  {isEditing && isAdminOrHR ? (
                     <input
                       type="text"
                       name="manager"
@@ -244,7 +289,7 @@ function MyProfile() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                  {isEditing ? (
+                  {isEditing && isAdminOrHR ? (
                     <input
                       type="text"
                       name="location"
@@ -330,21 +375,25 @@ function MyProfile() {
                 <button
                   onClick={() => {
                     setIsEditing(false)
-                    setFormData({
-                      name: user?.name || '',
-                      loginId: user?.loginId || '',
-                      email: user?.email || '',
-                      mobile: user?.phone || '',
-                      company: user?.companyName || '',
-                      department: user?.department || '',
-                      manager: user?.manager || '',
-                      location: user?.location || '',
-                      about: user?.about || '',
-                      jobLove: user?.jobLove || '',
-                      interests: user?.interests || '',
-                      skills: user?.skills || [],
-                      certifications: user?.certifications || [],
-                    })
+                    if (user) {
+                      setFormData({
+                        name: user?.name || '',
+                        loginId: user?.loginId || '',
+                        email: user?.email || '',
+                        mobile: user?.phone || '',
+                        address: user?.address || '',
+                        company: user?.companyName || '',
+                        department: user?.department || '',
+                        manager: user?.manager || '',
+                        location: user?.location || '',
+                        about: user?.about || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                        jobLove: user?.jobLove || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                        interests: user?.interests || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                        skills: user?.skills || [],
+                        certifications: user?.certifications || [],
+                        profilePicture: user?.profilePicture || null,
+                      })
+                    }
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
                 >
@@ -387,7 +436,7 @@ function MyProfile() {
               </div>
             </CardHeader>
             <CardBody>
-              {isEditing ? (
+              {isEditing && isAdminOrHR ? (
                 <textarea
                   name="about"
                   value={formData.about}
@@ -414,7 +463,7 @@ function MyProfile() {
               </div>
             </CardHeader>
             <CardBody>
-              {isEditing ? (
+              {isEditing && isAdminOrHR ? (
                 <textarea
                   name="jobLove"
                   value={formData.jobLove}
@@ -441,7 +490,7 @@ function MyProfile() {
               </div>
             </CardHeader>
             <CardBody>
-              {isEditing ? (
+              {isEditing && isAdminOrHR ? (
                 <textarea
                   name="interests"
                   value={formData.interests}
@@ -487,7 +536,7 @@ function MyProfile() {
                 ) : (
                   <p className="text-gray-500 text-sm">No skills added yet</p>
                 )}
-                {isEditing && (
+                {isEditing && isAdminOrHR && (
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -506,7 +555,7 @@ function MyProfile() {
                     </button>
                   </div>
                 )}
-                {!isEditing && (
+                {!isEditing && isAdminOrHR && (
                   <button
                     onClick={() => setIsEditing(true)}
                     className="text-odoo-primary hover:underline text-sm flex items-center gap-1"
@@ -548,7 +597,7 @@ function MyProfile() {
                 ) : (
                   <p className="text-gray-500 text-sm">No certifications added yet</p>
                 )}
-                {isEditing && (
+                {isEditing && isAdminOrHR && (
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -567,7 +616,7 @@ function MyProfile() {
                     </button>
                   </div>
                 )}
-                {!isEditing && (
+                {!isEditing && isAdminOrHR && (
                   <button
                     onClick={() => setIsEditing(true)}
                     className="text-odoo-primary hover:underline text-sm flex items-center gap-1"
