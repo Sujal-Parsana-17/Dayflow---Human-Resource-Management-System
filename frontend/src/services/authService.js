@@ -1,0 +1,110 @@
+import api from './api'
+import { API_ENDPOINTS } from '@utils/constants'
+import { generateLoginId } from '@utils/helpers'
+
+export const authService = {
+  // Sign Up
+  signUp: async (userData) => {
+    try {
+      // Simulate API call (replace with real API later)
+      // In production, this would be: await api.post(API_ENDPOINTS.AUTH.SIGNUP, userData)
+      
+      // For now, simulate with localStorage
+      const users = JSON.parse(localStorage.getItem('users') || '[]')
+      
+      // Check if email already exists
+      if (users.some(u => u.email === userData.email)) {
+        throw new Error('Email already registered')
+      }
+      
+      // Generate login ID
+      const loginId = generateLoginId(userData.companyName, users.length + 1)
+      
+      // Create new user
+      const newUser = {
+        id: Date.now().toString(),
+        loginId,
+        email: userData.email,
+        name: userData.name,
+        phone: userData.phone,
+        companyName: userData.companyName,
+        companyLogo: userData.companyLogo || null,
+        role: users.length === 0 ? 'admin' : userData.role || 'employee',
+        createdAt: new Date().toISOString(),
+      }
+      
+      // Save user
+      users.push({ ...newUser, password: userData.password })
+      localStorage.setItem('users', JSON.stringify(users))
+      
+      // Mark as new user for dashboard welcome
+      localStorage.setItem('isNewUser', 'true')
+      
+      // Generate token (fake JWT)
+      const token = btoa(JSON.stringify({ userId: newUser.id, email: newUser.email }))
+      
+      // Return user without password
+      const { password, ...userWithoutPassword } = newUser
+      
+      return {
+        user: userWithoutPassword,
+        token,
+        message: 'Account created successfully',
+      }
+    } catch (error) {
+      throw error
+    }
+  },
+
+  // Sign In
+  signIn: async (credentials) => {
+    try {
+      // Simulate API call (replace with real API later)
+      const users = JSON.parse(localStorage.getItem('users') || '[]')
+      
+      // Find user by email or loginId
+      const user = users.find(
+        u => u.email === credentials.identifier || u.loginId === credentials.identifier
+      )
+      
+      if (!user) {
+        throw new Error('Invalid credentials')
+      }
+      
+      // Check password
+      if (user.password !== credentials.password) {
+        throw new Error('Invalid credentials')
+      }
+      
+      // Generate token
+      const token = btoa(JSON.stringify({ userId: user.id, email: user.email }))
+      
+      // Return user without password
+      const { password, ...userWithoutPassword } = user
+      
+      return {
+        user: userWithoutPassword,
+        token,
+        message: 'Signed in successfully',
+      }
+    } catch (error) {
+      throw error
+    }
+  },
+
+  // Sign Out
+  signOut: async () => {
+    // In production, you might want to invalidate the token on the server
+    return { message: 'Signed out successfully' }
+  },
+
+  // Refresh Token
+  refreshToken: async () => {
+    try {
+      const response = await api.post(API_ENDPOINTS.AUTH.REFRESH)
+      return response.data
+    } catch (error) {
+      throw error
+    }
+  },
+}
