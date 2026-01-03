@@ -85,13 +85,15 @@ function Header() {
                 ? "bg-gradient-to-br from-odoo-primary to-odoo-primary-light group-hover:shadow-odoo-primary/30" 
                 : "bg-white/20 backdrop-blur-sm group-hover:shadow-white/30"
             }`}>
-              <img 
-                src={logo} 
-                alt="Dayflow Logo" 
-                className={`h-8 w-auto object-contain transition-all duration-300 ${
-                  !isScrolled ? "brightness-0 invert" : ""
-                }`}
-              />
+              {isScrolled ? (
+                <img 
+                  src={logo} 
+                  alt="Dayflow Logo" 
+                  className="h-8 w-auto object-contain transition-all duration-300"
+                />
+              ) : (
+                <Building2 className="h-8 w-8 text-white transition-all duration-300" />
+              )}
             </div>
             <span className={`text-xl font-bold tracking-tight transition-colors duration-300 ${
               isScrolled 
