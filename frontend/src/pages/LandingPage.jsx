@@ -4,6 +4,8 @@ import HeroSection from '@components/landing/HeroSection'
 import FeaturesSection from '@components/landing/FeaturesSection'
 import HowItWorksSection from '@components/landing/HowItWorksSection'
 import DashboardPreview from '@components/landing/DashboardPreview'
+import ExperienceCenterSection from '@components/landing/ExperienceCenterSection'
+import AboutSection from '@components/landing/AboutSection'
 import Footer from '@components/landing/Footer'
 
 function LandingPage() {
@@ -14,6 +16,8 @@ function LandingPage() {
       <FeaturesSection />
       <HowItWorksSection />
       <DashboardPreview />
+      <ExperienceCenterSection />
+      <AboutSection />
       <Footer />
     </div>
   )
