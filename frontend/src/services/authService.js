@@ -59,6 +59,30 @@ export const authService = {
   // Sign In
   signIn: async (credentials) => {
     try {
+      // Check for test account first
+      if (credentials.identifier === 'test@gmail.com' && credentials.password === '123456789') {
+        const testUser = {
+          id: 'test-admin-001',
+          loginId: 'TEST2026001',
+          email: 'test@gmail.com',
+          name: 'Test Admin',
+          phone: '+1234567890',
+          companyName: 'Test Company',
+          companyLogo: null,
+          role: 'admin',
+          createdAt: new Date().toISOString(),
+        }
+        
+        // Generate token
+        const token = btoa(JSON.stringify({ userId: testUser.id, email: testUser.email }))
+        
+        return {
+          user: testUser,
+          token,
+          message: 'Signed in successfully',
+        }
+      }
+      
       // Simulate API call (replace with real API later)
       const users = JSON.parse(localStorage.getItem('users') || '[]')
       
