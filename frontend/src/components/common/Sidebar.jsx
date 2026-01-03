@@ -7,9 +7,7 @@ import {
   Calendar, 
   FileText,
   Settings,
-  ChevronRight,
   User,
-  UserPlus,
   Menu,
   X
 } from 'lucide-react'
@@ -18,23 +16,14 @@ import { useAuth } from '@hooks/useAuth'
 export const Sidebar = () => {
   const { user, isAdmin, isHR } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [employeesExpanded, setEmployeesExpanded] = useState(false)
 
   const isAdminOrHR = isAdmin || isHR
 
   const navItems = isAdminOrHR ? [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
-    { 
-      icon: Users, 
-      label: 'Employees',
-      expandable: true,
-      subItems: [
-        { path: '/employees', icon: Users, label: 'All Employees' },
-        { path: '/employees/add', icon: UserPlus, label: 'Add Employee' },
-      ]
-    },
+    { path: '/employees', icon: Users, label: 'Employees' },
     { path: '/attendance', icon: Clock, label: 'Attendance' },
     { path: '/leave-requests', icon: Calendar, label: 'Leave Requests' },
+    { path: '/profile', icon: User, label: 'My Profile' },
     { path: '/reports', icon: FileText, label: 'Reports' },
     { path: '/settings', icon: Settings, label: 'Settings' },
   ] : [
@@ -59,59 +48,21 @@ export const Sidebar = () => {
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {navItems.map((item, index) => (
-          item.expandable ? (
-            <div key={index}>
-              <button
-                onClick={() => setEmployeesExpanded(!employeesExpanded)}
-                className="w-full flex items-center justify-between px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <div className="flex items-center">
-                  <item.icon className="h-5 w-5 mr-3" />
-                  <span className="font-medium">{item.label}</span>
-                </div>
-                <ChevronRight className={`h-4 w-4 transition-transform ${employeesExpanded ? 'rotate-90' : ''}`} />
-              </button>
-              
-              {/* Sub Items */}
-              {employeesExpanded && (
-                <div className="ml-4 mt-1 space-y-1">
-                  {item.subItems.map((subItem, subIndex) => (
-                    <NavLink
-                      key={subIndex}
-                      to={subItem.path}
-                      onClick={() => setMobileOpen(false)}
-                      className={({ isActive }) =>
-                        `flex items-center px-3 py-2 rounded-lg transition-colors ${
-                          isActive
-                            ? 'bg-gradient-to-r from-odoo-primary to-odoo-primary-light text-white'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        }`
-                      }
-                    >
-                      <subItem.icon className="h-4 w-4 mr-3" />
-                      <span className="text-sm">{subItem.label}</span>
-                    </NavLink>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <NavLink
-              key={index}
-              to={item.path}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center px-3 py-2.5 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-gradient-to-r from-odoo-primary to-odoo-primary-light text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`
-              }
-            >
-              <item.icon className="h-5 w-5 mr-3" />
-              <span className="font-medium">{item.label}</span>
-            </NavLink>
-          )
+          <NavLink
+            key={index}
+            to={item.path}
+            onClick={() => setMobileOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center px-3 py-2.5 rounded-lg transition-colors ${
+                isActive
+                  ? 'bg-gradient-to-r from-odoo-primary to-odoo-primary-light text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <item.icon className="h-5 w-5 mr-3" />
+            <span className="font-medium">{item.label}</span>
+          </NavLink>
         ))}
       </nav>
 

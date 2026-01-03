@@ -14,6 +14,7 @@ import MyLeaves from '@pages/MyLeaves'
 import ApplyLeave from '@pages/ApplyLeave'
 import LeaveRequests from '@pages/LeaveRequests'
 import PlaceholderPage from '@pages/PlaceholderPage'
+import MyProfile from '@pages/MyProfile'
 
 function AppRoutes() {
   return (
@@ -33,12 +34,12 @@ function AppRoutes() {
         } 
       />
 
-      {/* Employee Routes */}
+      {/* Profile Route - Different views for admin/HR vs employees */}
       <Route 
         path="/profile" 
         element={
           <ProtectedRoute>
-            <PlaceholderPage title="My Profile" description="View and edit your personal information" />
+            <MyProfile />
           </ProtectedRoute>
         } 
       />

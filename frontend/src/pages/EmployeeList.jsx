@@ -3,8 +3,9 @@ import { DashboardLayout } from '@components/common/DashboardLayout'
 import { Card } from '@components/common/Card'
 import { Button } from '@components/common/Button'
 import { useNavigate } from 'react-router-dom'
-import { Users, Search, Filter, Edit, Trash2, Eye } from 'lucide-react'
+import { Users, Search, Filter, Edit, Trash2, Eye, Circle, Plane } from 'lucide-react'
 import { StatusBadge } from '@components/common/StatusBadge'
+import { format } from 'date-fns'
 
 function EmployeeList() {
   const navigate = useNavigate()
@@ -31,139 +32,172 @@ function EmployeeList() {
     }
   }
 
+  // Get employee status based on attendance and leave data
+  const getEmployeeStatus = (employee) => {
+    const today = format(new Date(), 'yyyy-MM-dd')
+    
+    // Check if employee is on leave today
+    const allLeaves = JSON.parse(localStorage.getItem('leaves') || '[]')
+    const todayLeave = allLeaves.find(leave => 
+      leave.employeeId === employee.id && 
+      leave.status === 'approved' &&
+      leave.startDate <= today && 
+      leave.endDate >= today
+    )
+    
+    if (todayLeave) {
+      return 'on-leave' // Airplane icon
+    }
+    
+    // Check if employee checked in today
+    const allAttendance = JSON.parse(localStorage.getItem('attendance') || '[]')
+    const todayAttendance = allAttendance.find(a => 
+      a.employeeId === employee.id && 
+      a.date === today && 
+      a.checkIn
+    )
+    
+    if (todayAttendance) {
+      return 'present' // Green dot
+    }
+    
+    // If no check-in and no approved leave, they are absent
+    return 'absent' // Yellow dot
+  }
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'present':
+        return <Circle className="h-4 w-4 text-green-500 fill-green-500" />
+      case 'on-leave':
+        return <Plane className="h-4 w-4 text-blue-500" />
+      case 'absent':
+        return <Circle className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+      default:
+        return <Circle className="h-4 w-4 text-gray-400 fill-gray-400" />
+    }
+  }
+
   return (
     <DashboardLayout>
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">All Employees</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Employees</h1>
             <p className="text-gray-600 mt-1">Manage your organization's workforce</p>
           </div>
           <Button
             variant="primary"
             onClick={() => navigate('/employees/add')}
+            className="bg-purple-600 hover:bg-purple-700"
           >
             <Users className="h-5 w-5 mr-2" />
-            Add Employee
+            NEW
           </Button>
         </div>
       </div>
 
-      <Card>
-        {/* Search and Filter */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by name, email, or login ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-odoo-primary focus:border-transparent"
-              />
-            </div>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center">
-              <Filter className="h-5 w-5 mr-2" />
-              Filter
-            </button>
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search employees..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-odoo-primary focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      {/* Employee Cards Grid */}
+      {filteredEmployees.length === 0 ? (
+        <Card>
+          <div className="px-6 py-12 text-center text-gray-500">
+            <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>No employees found</p>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredEmployees.map((employee) => {
+            const status = getEmployeeStatus(employee)
+            return (
+              <Card key={employee.id} className="relative hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/employees/${employee.id}`)}>
+                {/* Status Indicator - Top Right */}
+                <div className="absolute top-4 right-4">
+                  {getStatusIcon(status)}
+                </div>
+                
+                {/* Employee Profile Picture */}
+                <div className="flex flex-col items-center pt-6 pb-4">
+                  <div className="h-20 w-20 rounded-full bg-gradient-to-br from-odoo-primary to-odoo-primary-light flex items-center justify-center text-white font-semibold text-2xl mb-3">
+                    {employee.name?.charAt(0) || 'U'}
+                  </div>
+                  
+                  {/* Employee Name */}
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    {employee.name || 'Unknown'}
+                  </h3>
+                  
+                  {/* Employee Email */}
+                  <p className="text-sm text-gray-500 mb-2">{employee.email}</p>
+                  
+                  {/* Role Badge */}
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-odoo-primary/10 text-odoo-primary uppercase mb-3">
+                    {employee.role || 'Employee'}
+                  </span>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex items-center space-x-2 mt-2" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => navigate(`/employees/${employee.id}`)}
+                      className="p-2 text-odoo-primary hover:bg-odoo-primary/10 rounded-lg transition-colors"
+                      title="View"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => navigate(`/employees/${employee.id}/edit`)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Edit"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(employee.id)}
+                      className="p-2 text-danger hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </Card>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Status Legend */}
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+        <p className="text-sm font-medium text-gray-700 mb-2">Status Indicators:</p>
+        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+          <div className="flex items-center gap-2">
+            <Circle className="h-4 w-4 text-green-500 fill-green-500" />
+            <span>Employee is present in the office</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Plane className="h-4 w-4 text-blue-500" />
+            <span>Employee is on leave</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Circle className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+            <span>Employee is absent (has not applied time off and is absent)</span>
           </div>
         </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Employee
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Login ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredEmployees.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                    No employees found
-                  </td>
-                </tr>
-              ) : (
-                filteredEmployees.map((employee) => (
-                  <tr key={employee.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-odoo-primary to-odoo-primary-light flex items-center justify-center text-white font-semibold">
-                          {employee.name?.charAt(0)}
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{employee.name}</div>
-                          <div className="text-sm text-gray-500">{employee.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-mono text-odoo-primary">{employee.loginId}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-odoo-primary/10 text-odoo-primary uppercase">
-                        {employee.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {employee.phone}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => navigate(`/employees/${employee.id}`)}
-                          className="text-odoo-primary hover:text-odoo-primary-dark"
-                          title="View"
-                        >
-                          <Eye className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => navigate(`/employees/${employee.id}/edit`)}
-                          className="text-blue-600 hover:text-blue-800"
-                          title="Edit"
-                        >
-                          <Edit className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(employee.id)}
-                          className="text-danger hover:text-red-700"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination Placeholder */}
-        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Showing <span className="font-medium">{filteredEmployees.length}</span> of{' '}
-            <span className="font-medium">{employees.length}</span> employees
-          </div>
-        </div>
-      </Card>
+      </div>
     </DashboardLayout>
   )
 }

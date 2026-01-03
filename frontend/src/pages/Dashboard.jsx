@@ -11,9 +11,10 @@ function Dashboard() {
     return <Navigate to="/signin" replace />
   }
 
-  // Route to appropriate dashboard based on role
+  // Redirect admin/HR to Employees page after login (as per wireframe)
+  // The Employees page is the landing page for admin/HR users
   if (isAdmin || isHR) {
-    return <AdminDashboard />
+    return <Navigate to="/employees" replace />
   }
 
   return <EmployeeDashboard />
