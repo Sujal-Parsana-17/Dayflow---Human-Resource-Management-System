@@ -1,6 +1,7 @@
 import Employee from "../models/Employee.js";
 import User from "../models/User.js";
 import { generateLoginId } from "../utils/generateLoginId.js";
+import { generatePassword } from "../utils/passwordGenerator.js";
 import { parsePagination } from "../utils/helpers.js";
 import { sendWelcomeEmail } from "../utils/emailService.js";
 
@@ -26,15 +27,20 @@ export const getAllEmployees = async (req, res, next) => {
       query["jobDetails.department"] = department;
     }
 
+    console.log('📊 Fetching employees with query:', query);
+
     const employees = await Employee.find(query)
       .skip(skip)
       .limit(parseInt(limit))
       .populate("userId", "loginId email role name");
 
+    console.log(`📊 Found ${employees.length} employees out of total: ${await Employee.countDocuments(query)}`);
+
     const total = await Employee.countDocuments(query);
     const pages = Math.ceil(total / limit);
 
     res.json({
+      success: true,
       employees,
       total,
       pages,
@@ -42,6 +48,7 @@ export const getAllEmployees = async (req, res, next) => {
       message: "Employees retrieved successfully",
     });
   } catch (error) {
+    console.error('❌ Error fetching employees:', error);
     next(error);
   }
 };
@@ -89,7 +96,6 @@ export const createEmployee = async (req, res, next) => {
       joiningDate,
       salary,
       address,
-      password,
       companyName,
       companyLogo,
     } = req.body;
@@ -101,8 +107,7 @@ export const createEmployee = async (req, res, next) => {
       !phone ||
       !role ||
       !designation ||
-      !department ||
-      !password
+      !department
     ) {
       return res.status(400).json({
         success: false,
@@ -110,12 +115,17 @@ export const createEmployee = async (req, res, next) => {
       });
     }
 
+    // Auto-generate secure password
+    const password = generatePassword();
+    console.log(`🔑 Generated password for ${email}: ${password}`);
+
     // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log(`❌ Duplicate email attempt: ${email}`);
       return res.status(400).json({
         success: false,
-        message: "Email already registered",
+        message: `This email (${email}) is already registered. Please use a different email address.`,
       });
     }
 
@@ -132,7 +142,7 @@ export const createEmployee = async (req, res, next) => {
     // Generate login ID
     const loginId = await generateLoginId(company, firstName, lastName);
 
-    // Create user
+    // Create user with password change required flag
     const user = new User({
       loginId,
       email,
@@ -143,11 +153,29 @@ export const createEmployee = async (req, res, next) => {
       companyLogo,
       role,
       employeeId: null,
+      passwordChangeRequired: true,
+      firstLogin: true,
     });
 
     await user.save();
+    console.log(`✅ User created with ID: ${user._id}`);
 
     // Create employee record
+    // Handle address - if string, convert to object format
+    let addressObj = undefined;
+    if (address && typeof address === 'string') {
+      addressObj = {
+        street: address,
+        city: '',
+        state: '',
+        pincode: '',
+        country: 'India'
+      };
+    } else if (address && typeof address === 'object') {
+      addressObj = address;
+    }
+
+    console.log('📝 Creating employee record...');
     const employee = new Employee({
       userId: user._id,
       personalInfo: {
@@ -155,7 +183,7 @@ export const createEmployee = async (req, res, next) => {
         lastName,
         email,
         phone,
-        address,
+        ...(addressObj && { address: addressObj }),
       },
       companyInfo: {
         companyName: company,
@@ -169,6 +197,7 @@ export const createEmployee = async (req, res, next) => {
     });
 
     await employee.save();
+    console.log(`✅ Employee created with ID: ${employee._id}`);
 
     // Link employee to user
     user.employeeId = employee._id;
@@ -178,12 +207,14 @@ export const createEmployee = async (req, res, next) => {
     await sendWelcomeEmail(email, loginId, password, company);
 
     res.status(201).json({
+      success: true,
       employee,
       loginCredentials: {
         loginId,
         password,
+        message: "Please share these credentials securely with the employee",
       },
-      message: "Employee created successfully",
+      message: "Employee created successfully. Password has been auto-generated.",
     });
   } catch (error) {
     next(error);

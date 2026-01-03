@@ -57,15 +57,27 @@ export const validateEmployeeCreate = [
     .matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
     .withMessage("Please provide a valid email"),
   body("phone")
+    .trim()
+    .notEmpty()
+    .withMessage("Phone is required")
     .matches(/^[0-9]{10,15}$/)
     .withMessage("Phone number must be 10-15 digits"),
-  body("role").isIn(["admin", "hr", "employee"]).withMessage("Invalid role"),
+  body("role")
+    .notEmpty()
+    .withMessage("Role is required")
+    .isIn(["admin", "hr", "employee"])
+    .withMessage("Invalid role"),
   body("designation").trim().notEmpty().withMessage("Designation is required"),
   body("department").trim().notEmpty().withMessage("Department is required"),
-  body("joiningDate").isISO8601().withMessage("Invalid date format"),
-  body("password")
-    .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters"),
+  body("joiningDate")
+    .optional()
+    .isISO8601()
+    .withMessage("Invalid date format"),
+  body("salary")
+    .optional()
+    .isNumeric()
+    .withMessage("Salary must be a number"),
+  // Password is auto-generated, not required from input
 ];
 
 export const validateLeave = [

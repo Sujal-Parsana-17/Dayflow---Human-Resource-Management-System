@@ -34,10 +34,14 @@ function SignIn() {
       setIsSubmitting(true)
       setServerError('')
       
-      await signIn(data)
+      const response = await signIn(data)
       
-      // Navigate to dashboard after successful sign in
-      navigate('/dashboard')
+      // Check if password change is required
+      if (response.passwordChangeRequired) {
+        navigate('/change-password')
+      } else {
+        navigate('/dashboard')
+      }
     } catch (error) {
       setServerError(error.message || 'Sign in failed. Please check your credentials.')
     } finally {

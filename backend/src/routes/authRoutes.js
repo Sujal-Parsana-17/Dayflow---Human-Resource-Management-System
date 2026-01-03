@@ -4,6 +4,7 @@ import {
   signin,
   getCurrentUser,
   logout,
+  changePassword,
 } from "../controllers/authController.js";
 import authMiddleware from "../middleware/auth.js";
 import {
@@ -37,5 +38,11 @@ router.get("/me", authMiddleware, getCurrentUser);
  * Logout user
  */
 router.post("/logout", authMiddleware, logout);
+
+/**
+ * PUT /api/auth/change-password
+ * Change user password
+ */
+router.put("/change-password", authMiddleware, changePassword);
 
 export default router;

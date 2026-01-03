@@ -191,6 +191,9 @@ function SignUp() {
               <strong>Note:</strong> As the first user, you will be assigned the Admin role.
               Your Login ID will be auto-generated after registration.
             </p>
+            <p className="text-sm text-blue-700 mt-2">
+              After your account is created, only HR Officers and Admins can create additional employee accounts.
+            </p>
           </div>
 
           {/* Submit Button */}

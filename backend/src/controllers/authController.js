@@ -167,8 +167,11 @@ export const signin = async (req, res, next) => {
       });
     }
 
-    // Update last login
+    // Update last login and first login flag
     user.lastLogin = new Date();
+    if (user.firstLogin) {
+      user.firstLogin = false;
+    }
     await user.save();
 
     // Generate token
@@ -182,6 +185,7 @@ export const signin = async (req, res, next) => {
       user: user.toJSON(),
       token,
       employee,
+      passwordChangeRequired: user.passwordChangeRequired,
       message: "Signed in successfully",
     });
   } catch (error) {
@@ -229,4 +233,59 @@ export const logout = async (req, res, next) => {
   }
 };
 
-export default { signup, signin, getCurrentUser, logout };
+/**
+ * Change Password
+ */
+export const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide current password and new password",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must be at least 6 characters",
+      });
+    }
+
+    // Get user with password
+    const user = await User.findById(req.userId).select("+password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Verify current password
+    const isPasswordValid = await user.comparePassword(currentPassword);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    // Update password
+    user.password = newPassword;
+    user.passwordChangedAt = new Date();
+    user.passwordChangeRequired = false;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default { signup, signin, getCurrentUser, logout, changePassword };

@@ -15,6 +15,7 @@ import ApplyLeave from '@pages/ApplyLeave'
 import LeaveRequests from '@pages/LeaveRequests'
 import PlaceholderPage from '@pages/PlaceholderPage'
 import MyProfile from '@pages/MyProfile'
+import ChangePassword from '@pages/ChangePassword'
 
 function AppRoutes() {
   return (
@@ -122,6 +123,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PlaceholderPage title="Settings" description="Manage your account and system settings" />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/change-password" 
+        element={
+          <ProtectedRoute>
+            <ChangePassword />
           </ProtectedRoute>
         } 
       />

@@ -31,12 +31,18 @@ function EmployeeList() {
   const fetchEmployees = async () => {
     try {
       setLoading(true);
+      console.log('📊 Fetching employees from API...');
       const response = await api.get("/employees");
-      const data = response.data.data || response.data;
-      setEmployees(Array.isArray(data) ? data : []);
+      console.log('📊 API Response:', response.data);
+      
+      // Backend returns { success, employees, total, pages, currentPage, message }
+      const employeeData = response.data.employees || response.data.data || response.data;
+      console.log('📊 Employee data:', employeeData);
+      
+      setEmployees(Array.isArray(employeeData) ? employeeData : []);
       setError(null);
     } catch (err) {
-      console.error("Error fetching employees:", err);
+      console.error("❌ Error fetching employees:", err);
       setError(err.message);
       setEmployees([]);
     } finally {

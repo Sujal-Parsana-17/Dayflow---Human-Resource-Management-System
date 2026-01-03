@@ -81,6 +81,12 @@ export const AuthProvider = ({ children }) => {
       // Store user and token
       localStorage.setItem('user', JSON.stringify(response.user))
       localStorage.setItem('authToken', response.token)
+      
+      // Store password change requirement flag
+      if (response.passwordChangeRequired) {
+        localStorage.setItem('passwordChangeRequired', 'true')
+      }
+      
       setUser(response.user)
       
       return response
@@ -108,6 +114,7 @@ export const AuthProvider = ({ children }) => {
   const signOut = () => {
     localStorage.removeItem('user')
     localStorage.removeItem('authToken')
+    localStorage.removeItem('passwordChangeRequired')
     setUser(null)
     setError(null)
   }
