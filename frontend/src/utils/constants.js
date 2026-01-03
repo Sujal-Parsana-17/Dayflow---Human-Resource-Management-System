@@ -34,6 +34,7 @@ export const API_ENDPOINTS = {
     SIGNUP: '/auth/signup',
     SIGNIN: '/auth/signin',
     LOGOUT: '/auth/logout',
+    ME: '/auth/me',
     REFRESH: '/auth/refresh',
   },
   EMPLOYEES: {

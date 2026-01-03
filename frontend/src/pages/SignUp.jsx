@@ -8,7 +8,8 @@ import { useAuth } from '@hooks/useAuth'
 import { Button } from '@components/common/Button'
 import { Input } from '@components/common/Input'
 
-// Validation Schema
+
+
 const signUpSchema = yup.object().shape({
   companyName: yup.string().required('Company name is required').min(2, 'Company name must be at least 2 characters'),
   name: yup.string().required('Name is required').min(2, 'Name must be at least 2 characters'),
