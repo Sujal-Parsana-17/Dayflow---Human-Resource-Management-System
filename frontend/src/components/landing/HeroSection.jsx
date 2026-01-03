@@ -30,7 +30,7 @@ function HeroSection() {
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <button className="inline-flex items-center justify-center px-8 py-4 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-odoo-primary transition-all">
+              <button className="inline-flex items-center justify-center px-8 py-4 border-2 border-white/80 text-white bg-white/10 backdrop-blur-sm rounded-lg font-semibold hover:bg-white hover:text-odoo-primary hover:border-white transition-all">
                 <Play className="w-5 h-5 mr-2" />
                 Watch Demo
               </button>
