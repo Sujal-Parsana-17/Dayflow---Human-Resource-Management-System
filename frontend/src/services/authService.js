@@ -59,7 +59,7 @@ export const authService = {
   // Sign In
   signIn: async (credentials) => {
     try {
-      // Check for test account first
+      // Check for test accounts first
       if (credentials.identifier === 'test@gmail.com' && credentials.password === '123456789') {
         const testUser = {
           id: 'test-admin-001',
@@ -78,6 +78,30 @@ export const authService = {
         
         return {
           user: testUser,
+          token,
+          message: 'Signed in successfully',
+        }
+      }
+      
+      // Employee test account
+      if (credentials.identifier === 'employee@gmail.com' && credentials.password === '123456789') {
+        const testEmployee = {
+          id: 'test-employee-001',
+          loginId: 'TEST2026002',
+          email: 'employee@gmail.com',
+          name: 'Test Employee',
+          phone: '+1234567891',
+          companyName: 'Test Company',
+          companyLogo: null,
+          role: 'employee',
+          createdAt: new Date().toISOString(),
+        }
+        
+        // Generate token
+        const token = btoa(JSON.stringify({ userId: testEmployee.id, email: testEmployee.email }))
+        
+        return {
+          user: testEmployee,
           token,
           message: 'Signed in successfully',
         }
